@@ -1,0 +1,20 @@
+{
+    "name": "api",
+    "version": "1.0.0",
+    "scripts": {
+        "dev": "bun run --watch src/index.ts"
+    },
+    "dependencies": {
+        "@elysiajs/cors": "latest",
+        "@elysiajs/swagger": "latest",
+        "@mono/core": "workspace:*",
+        "@mono/db": "workspace:*",
+        "@sinclair/typebox": "^0.34.0",
+        "drizzle-orm": "^0.45.1",
+        "elysia": "latest"
+    },
+    "devDependencies": {
+        "bun-types": "latest",
+        "typescript": "latest"
+    }
+}

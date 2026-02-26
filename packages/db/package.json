@@ -1,0 +1,16 @@
+{
+    "name": "@mono/db",
+    "version": "1.0.0",
+    "main": "./src/index.ts",
+    "scripts": {
+        "db:generate": "drizzle-kit generate:sqlite",
+        "db:push": "drizzle-kit push:sqlite"
+    },
+    "dependencies": {
+        "drizzle-orm": "latest",
+        "@libsql/client": "latest"
+    },
+    "devDependencies": {
+        "drizzle-kit": "latest"
+    }
+}

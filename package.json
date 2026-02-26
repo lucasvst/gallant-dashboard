@@ -1,0 +1,14 @@
+{
+    "name": "gallant-dashboard",
+    "private": true,
+    "scripts": {
+        "dev": "turbo dev",
+        "build": "turbo build",
+        "test": "turbo test"
+    },
+    "devDependencies": {
+        "turbo": "latest",
+        "typescript": "latest"
+    },
+    "packageManager": "pnpm@9.0.0"
+}

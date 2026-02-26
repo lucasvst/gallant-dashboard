@@ -1,8 +1,12 @@
 export interface BikeMetrics {
-    speed: number;
-    cadence: number;
-    power: number;
-    timestamp: Date;
+    speed?: number | null;
+    avgSpeed?: number | null;
+    cadence?: number | null;
+    avgCadence?: number | null;
+    totalDistance?: number | null;
+    resistance?: number | null;
+    power?: number | null;
+    avgPower?: number | null;
 }
 
 export class GallantParser {
@@ -13,30 +17,39 @@ export class GallantParser {
     };
 
     static parse(dataView: DataView): Partial<BikeMetrics> {
-        const byteLength = dataView.byteLength;
+        const flags = dataView.getUint16(0, true);
+        let offset = 2;
+        let result: Partial<BikeMetrics> = {};
 
-        // 18 bytes (Speed and Power)
-        if (byteLength === 18) {
-            const rawSpeed = dataView.getUint16(2, true);
-            const rawPower = dataView.getInt16(9, true);
+        // 1. Velocidade é mandatória na especificação
+        result.speed = dataView.getUint16(offset, true) / 100;
+        offset += 2;
 
-            return {
-                speed: Number((rawSpeed * this.CONFIG.SPEED_FACTOR).toFixed(1)),
-                power: Math.round(rawPower * this.CONFIG.POWER_FACTOR),
-                timestamp: new Date()
-            };
-        }
+        // Função auxiliar para evitar repetição e tratar offsets dinâmicos
+        const readIfPresent = (bit: number, length: number, type = 'uint16') => {
+            if (flags & (1 << bit)) {
+                let value;
+                if (type === 'uint16') value = dataView.getUint16(offset, true);
+                else if (type === 'int16') value = dataView.getInt16(offset, true);
+                else if (type === 'uint24') {
+                    value = dataView.getUint8(offset) + (dataView.getUint8(offset + 1) << 8) + (dataView.getUint8(offset + 2) << 16);
+                }
+                offset += length;
+                return value;
+            }
+            return null;
+        };
 
-        // 6 bytes (Cadence)
-        if (byteLength === 6) {
-            const rawCad = dataView.getUint16(2, true);
+        result.avgSpeed = readIfPresent(1, 2);
+        result.cadence = readIfPresent(2, 2); // Unidade geralmente é 0.5
+        result.avgCadence = readIfPresent(3, 2);
+        result.totalDistance = readIfPresent(4, 3, 'uint24');
+        result.resistance = readIfPresent(5, 2);
+        result.power = readIfPresent(6, 2, 'int16');
+        result.avgPower = readIfPresent(7, 2, 'int16');
+        // ... pular Expended Energy (bit 8 - 5 bytes) se necessário
+        if (flags & (1 << 8)) offset += 5;
 
-            return {
-                cadence: Math.round(rawCad / this.CONFIG.RPM_FACTOR),
-                timestamp: new Date()
-            };
-        }
-
-        return {};
+        return result;
     }
 }
